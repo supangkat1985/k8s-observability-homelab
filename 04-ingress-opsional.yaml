@@ -1,0 +1,20 @@
+# OPSIONAL — hanya kalau Ingress di Docker Desktop diaktifkan
+# (Settings -> Kubernetes -> Enable Ingress). Untuk belajar, port-forward sudah cukup.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: belajar
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: web.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80

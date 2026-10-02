@@ -1,0 +1,11 @@
+# values lokal yang berisi token/password asli
+values-alertmanager.local.yaml
+*.local.yaml
+
+# rahasia Kubernetes hasil kubectl create secret (jangan pernah di-apply ulang ke repo)
+*secret*.yaml
+secret-*.yaml
+
+# sampah lokal
+.DS_Store
+*.log

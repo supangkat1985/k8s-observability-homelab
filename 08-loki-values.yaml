@@ -1,0 +1,56 @@
+# Hari 5 — values untuk Loki (chart grafana-community/loki 18.13.0, appVersion 3.7.7).
+# Mode Monolithic: 1 pod StatefulSet, storage di PVC lokal, cocok untuk homelab/laptop.
+# Dipakai:
+#   helm upgrade --install loki grafana-community/loki -n monitoring -f 08-loki-values.yaml
+#
+# Catatan: repo `grafana/loki-stack` (loki-stack + promtail) SUDAH DEPRECATED per 2026-03-02
+# (Promtail EOL). Penggantinya: chart `grafana-community/loki` (monolithic) + `grafana/alloy`
+# untuk mengumpulkan log. Ini yang dipakai di folder ini.
+
+deploymentMode: Monolithic
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 2Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+# WAJIB: default chart tetap menyalakan backend/read/write (3 replika masing-masing);
+# tanpa nol ini, helm gagal dengan "more than zero replicas for both monolithic and
+# simple scalable targets".
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  # useTestSchema=true -> schema bawaan (tanpa config storage eksternal).
+  # Tetap wajib isi bucketNames (divalidasi chart) walau pakai test schema.
+  useTestSchema: true
+  storage:
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+chunksCache:
+  enabled: false
+resultsCache:
+  enabled: false
+lokiCanary:
+  enabled: false
+test:
+  enabled: false
+gateway:
+  enabled: false
+minio:
+  enabled: false
+monitoring:
+  serviceMonitor:
+    enabled: false

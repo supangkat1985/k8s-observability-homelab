@@ -1,0 +1,36 @@
+# Hari 6 — PrometheusRule.
+# PENTING: label `release: kps` harus SAMA dengan nama rilis Helm.
+# Kalau rilisnya dinamai lain, Prometheus diam-diam tidak memuat aturan ini.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: aturan-belajar
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  groups:
+    - name: dasar
+      rules:
+        - alert: PodSeringRestart
+          expr: increase(kube_pod_container_status_restarts_total{namespace="belajar"}[10m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} restart lebih dari 3x dalam 10 menit"
+            description: "Cek: kubectl -n belajar describe pod {{ $labels.pod }}"
+        - alert: MemoriPodTinggi
+          expr: sum by (pod, namespace) (container_memory_working_set_bytes{namespace="belajar"}) > 500e6
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} memakai memori lebih dari 500MB"
+        - alert: PodTidakReady
+          expr: kube_pod_status_ready{namespace="belajar", condition="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.pod }} tidak Ready lebih dari 5 menit"

@@ -1,0 +1,42 @@
+# Hari 2 — Deployment (2 replika) + readiness probe.
+# Rantai yang harus dilihat: Deployment -> ReplicaSet -> Pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: belajar
+  labels:
+    app: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

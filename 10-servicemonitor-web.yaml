@@ -1,0 +1,31 @@
+# Hari 3 — Prometheus + Grafana + ServiceMonitor untuk app `belajar`
+#
+# Kenapa file ini perlu: tanpa ServiceMonitor, Prometheus hanya meng-scrape
+# komponen Kubernetes (node, kube-system). Pod `web` di namespace `belajar`
+# TIDAK akan muncul di Grafana. ServiceMonitor = "daftarkan aplikasi saya
+# ke Prometheus".
+#
+# Pakai: kubectl apply -f 10-servicemonitor-web.yaml
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: web
+  namespace: belajar                      # namespace tempat aplikasi, bukan monitoring
+  labels:
+    app: web
+spec:
+  selector:
+    matchLabels:
+      app: web                            # HARUS sama dengan label Service web
+  namespaceSelector:
+    matchNames:
+      - belajar                           # Service web ada di namespace belajar
+  endpoints:
+    - port: http                          # = nama port di Service (03-service.yaml: name: http)
+      path: /metrics
+      interval: 15s
+      # nginx TIDAK expose /metrics di port 80 -> purposefully dibiarkan error dulu
+      # supaya kamu bisa melihat sendiri apa yang terjadi di tab Status -> Error.
+      # SOLUSI ada di LANGKAH 5 (pakai nginx-exporter atau ganti ke image
+      # yang memang expose /metrics).

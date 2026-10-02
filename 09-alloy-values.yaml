@@ -1,0 +1,38 @@
+# Hari 5 — values untuk Alloy (chart grafana/alloy 1.12.1, appVersion v1.19.2).
+# Alloy menggantikan Promtail (EOL 2026-03-02) sebagai pengumpul log ke Loki.
+# Dipakai:
+#   helm upgrade --install alloy grafana/alloy -n monitoring -f 09-alloy-values.yaml
+#
+# Alloy jalan sebagai DaemonSet (1 pod per node) dan mengirim log semua pod
+# di namespace manapun ke Loki via endpoint http://loki:3100 (service Loki di ns monitoring).
+
+controller:
+  type: daemonset          # 1 agent per node; untuk 1-node Docker Desktop = 1 pod
+rbac:
+  create: true             # butuh baca pods/pods-log/namespaces
+serviceMonitor:
+  enabled: false
+alloy:
+  configMap:
+    create: true
+    # Konfigurasi Alloy (bahasa River). Pipeline: temukan pod -> baca log -> push ke Loki.
+    content: |
+      logging {
+        level  = "info"
+        format = "logfmt"
+      }
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      loki.source.kubernetes "pods" {
+        targets    = discovery.kubernetes.pods.targets
+        forward_to = [loki.write.default.receiver]
+      }
+
+      loki.write "default" {
+        endpoint {
+          url = "http://loki:3100/loki/api/v1/push"
+        }
+      }

@@ -1,0 +1,18 @@
+# Hari 2 — Service: alamat tetap untuk pod yang hidup-mati.
+# selector HARUS cocok dengan label pod (app: web), kalau tidak -> endpoints kosong.
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: belajar
+  labels:
+    app: web
+spec:
+  type: ClusterIP
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP

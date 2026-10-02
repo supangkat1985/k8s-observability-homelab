@@ -1,0 +1,51 @@
+# Hari 3 — values untuk kube-prometheus-stack (chart 88.x, k8s >= 1.25).
+# Dipakai: helm upgrade --install kps prometheus-community/kube-prometheus-stack -n monitoring -f 06-values-kps.yaml
+# TIDAK ada password di file ini. Password Grafana dikirim lewat --set dari variabel shell.
+
+prometheus:
+  prometheusSpec:
+    retention: 6h
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        memory: 1500Mi
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    # Selector di bawah membuat Prometheus memakai selector dari values Helm,
+    # yang secara default adalah label `release: kps`. ServiceMonitor 10-servicemonitor-web.yaml
+    # DI PAS `belajar` dan TIDAK diberi label itu, jadi harus di-set false agar
+    # Prometheus ikut memuat ServiceMonitor dari namespace lain.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+grafana:
+  # adminPassword sengaja TIDAK ditaruh di sini — pakai --set saat install
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi

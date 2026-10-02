@@ -1,0 +1,30 @@
+# Hari 6 — CONTOH nilai Alertmanager -> Telegram.
+# ⚠️ JANGAN COMMIT FILE INI ke repo publik. Salin jadi values-alertmanager.local.yaml
+#    (sudah masuk .gitignore) dan isi token asli di situ.
+# Cara pakai:
+#   helm upgrade --install kps prometheus-community/kube-prometheus-stack -n monitoring \
+#     -f 06-values-kps.yaml -f values-alertmanager.local.yaml
+
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: telegram
+      group_by: ["alertname", "namespace"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 3h
+    receivers:
+      - name: telegram
+        telegram_configs:
+          - bot_token: "<TOKEN_BOT_DARI_BOTFATHER>"
+            chat_id: <CHAT_ID_ANGKA>
+            parse_mode: HTML
+            send_resolved: true
+            message: |
+              {{ range .Alerts }}
+              <b>[{{ .Status | toUpper }}] {{ .Labels.alertname }}</b>
+              {{ .Annotations.summary }}
+              severity: {{ .Labels.severity }}
+              {{ end }}
